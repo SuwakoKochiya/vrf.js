@@ -1,130 +1,184 @@
 import * as crypto from "crypto"
 import * as elliptic from 'elliptic'
-import { BN, BNObject } from "bn.js";
-const ec = new elliptic.ec("ed25519")
+import { BN, BNObject } from 'bn.js'
+const ec = new elliptic.ec('ed25519')
+const eddsa = new elliptic.eddsa('ed25519')
 
-
-const sha256 = () => crypto.createHash("sha256")
 const N2 = 32
 const N = N2 / 2
-const limit = 100
-const cofactor = 8
+const LIMIT = 100
+const COFACTOR = 8
 
+type Point = elliptic.curve.edwards.Point
 
-function OS2ECP(os, sign) {
-  const b = os.slice()
-  // if (sign !== undefined)
-  //   b[31] = (sign << 7) | (b[31] & 0x7f)
+export type ArrayOrBuffer = Buffer | number[]
+
+const sha256 = () => crypto.createHash('sha256')
+const sha512 = () => crypto.createHash('sha512')
+
+function OS2ECP(os: ArrayOrBuffer) {
+  const b = elliptic.utils.toArray(os, 16)
   try {
-    const point = pointFromByteArray(b)
-    // console.log(ECP2OS(point).equals(b))
-    return point
-  } catch (e) {
-  }
-  return null;
+    return eddsa.decodePoint(b) as Point
+  } catch (e) { }
+  return null
 }
 
-function ECP2OS(P) {
-  var os = pointToByteArray(P)
-  var sign = os[31] >>> 7
+function ECP2OS(P: Point) {
+  return S2OS(eddsa.encodePoint(P))
+}
+
+function S2OS(os: number[]) {
+  const sign = os[31] >>> 7
   os.unshift(sign + 2)
-  return new Buffer(os)
+  return normalize(os)
 }
 
-function OS2IP(os) {
+function OS2IP(os: ArrayOrBuffer) {
   return new BN(os)
 }
 
-function pointFromByteArray(p: Buffer) {
-  const bytes = elliptic.utils.toArray(p, void 0)
-  var lastIx = bytes.length - 1;
-  var normed = bytes.slice(0, lastIx).concat(bytes[lastIx] & ~0x80);
-  var xIsOdd = (bytes[lastIx] & 0x80) !== 0;
-  var y = elliptic.utils.intFromLE(normed);
-  return (ec.curve as any).pointFromY(y, xIsOdd);
+function I2OSP(i: BNObject, len?: number) {
+  return i.toArray('be', len)
 }
 
-function pointToByteArray(point: any) {
-  var enc = point.getY().toArray('le', N2)
-  enc[N2 - 1] |= point.getX().isOdd() ? 0x80 : 0
-  return enc as number[]
+function normalize(data: any) {
+  return new Buffer(data)
 }
 
-
-export function ECVRF_hash_to_curve(m, pk) {
-  for (var i = 0; i < limit; i++) {
-    var ctr = [i]
-    for (var n = 4 - ctr.length; --n >= 0;) {
+function ECVRF_hash_to_curve(m: ArrayOrBuffer, pk: ArrayOrBuffer) {
+  for (let i = 0; i < LIMIT; i++) {
+    const ctr = elliptic.utils.toArray([i], 16)
+    for (let n = 4 - ctr.length; --n >= 0;) {
       ctr.unshift(0)
     }
     const digest = sha256()
-      .update(new Buffer(m))
-      .update(new Buffer(pk))
-      .update(new Buffer(ctr))
+      .update(normalize(m))
+      .update(normalize(pk))
+      .update(normalize(ctr))
       .digest()
-    // console.log(digest)
-    let P = OS2ECP(digest, void 0)
-    if (P) {
-      // assume cofactor is 2^n
-      for (var j = 1; j < cofactor; j *= 2)
-        P = P.add(P)
-      return P
+
+    let point = OS2ECP(digest)
+    if (point) {
+      for (let j = 1; j < COFACTOR; j *= 2)
+        point = point.add(point)
+      return point
     }
   }
-  // should not reach here
-  throw new Error("couldn't make a point on curve")
+  return null
 }
 
 
-function ECVRF_hash_points(...args: any[]) {
-  let h = sha256()
-  for (var i = 0; i < args.length; i++) {
-    const buf = ECP2OS(args[i])
-    console.log(buf[0], i)
-    h = h.update(buf);
-  }
-  return OS2IP(h.digest().slice(0, N))
+function ECVRF_hash_points(...args: Point[]) {
+  const hash = args.reduce(
+    (prev, curr) => prev.update(ECP2OS(curr)),
+    sha256()
+  )
+  return OS2IP(hash.digest().slice(0, N))
 }
 
-function ECVRF_decode_proof(pi) {
-  var i = 0;
-  var sign = pi[i++];
-  var r, c, s;
-  if (sign != 2 && sign != 3)
-    return
-  if (!(r = OS2ECP(pi.slice(i, i + N2), sign - 2)))
-    return
-  i += N2;
-  c = pi.slice(i, i + N)
-  i += N;
-  s = pi.slice(i, i + N2)
-  return { r: r, c: OS2IP(c), s: OS2IP(s) }
+function ECVRF_decode_proof(proof: ArrayOrBuffer) {
+  let pos = 0
+  const sign = proof[pos++]
+  if (sign != 2 && sign != 3) return
+  const r = OS2ECP(proof.slice(pos, pos + N2))
+  if (!r) return
+  pos += N2
+  const c = proof.slice(pos, pos + N)
+  pos += N;
+  const s = proof.slice(pos, pos + N2)
+  return { r, c: OS2IP(c), s: OS2IP(s) }
 }
 
-const B = (ec.curve as any).g
+const g = eddsa.curve.g as Point
 
-function ECVRF_verify(pk, pi, m) {
-  const o = ECVRF_decode_proof(pi) // 没问题 
-  if (!o)
-    return false
-  const P = OS2ECP(pk, pk[31] >>> 7) // pass
-  if (!P)
-    return false
-  // u = (g^x)^c * g^s = P^c * g^s
-  const u = P.mul(o.c).add(B.mul(o.s)) // pass 
-  const h = ECVRF_hash_to_curve(m, pk) // 没问题
-  // v = gamma^c * h^s
-  const v = o.r.mul(o.c).add(h.mul(o.s)) // pass 
-  // console.log(pointToByteArray(v)) // pass 
-  // c' = ECVRF_hash_points(g, h, g^x, gamma, u, v)
-  // console.log(pointToByteArray(B))
-  const c = ECVRF_hash_points(B, h, P, o.r, u, v)
-  console.log(c, o.c)
+export function ECVRF_verify(pk: ArrayOrBuffer, pi: ArrayOrBuffer, m: ArrayOrBuffer) {
+  const o = ECVRF_decode_proof(pi)
+  if (!o) return false
+  const P = OS2ECP(pk)
+  if (!P) return false
+  const u = P.mul(o.c).add(g.mul(o.s))
+  const h = ECVRF_hash_to_curve(m, pk)
+  const v = o.r.mul(o.c).add(h.mul(o.s))
+  const c = ECVRF_hash_points(g, h, P, o.r, u, v)
   return c.eq(o.c)
 }
 
-export function verify(pk, m, vrf, proof) {
-  if (!(vrf.length == N2 && proof.length > N2 + 1 && vrf.every(function (v, i) { return v === proof[i + 1] })))
-    return false
-  return ECVRF_verify(pk, proof, m)
+function concatBuffer(...args: ArrayOrBuffer[]) {
+  const arr = args.reduce<number[]>((prev, curr) => prev.concat(elliptic.utils.toArray(curr, 16)), [])
+  return new Buffer(arr)
+}
+
+function expandSecret(sk: Buffer) {
+  // copied from golang.org/x/crypto/ed25519/ed25519.go -- has to be the same
+  const digest = sha512().update(sk.slice(0, N2)).digest()
+  digest[0] &= 248
+  digest[31] &= 127
+  digest[31] |= 64
+  return digest.slice(0, N2)
+}
+
+
+export function generatePair() {
+  const sec = elliptic.rand(64)
+  const pair = eddsa.keyFromSecret(sec)
+  const publicKey = pair.getPublic('hex')
+  const privateKey = pair.getSecret('hex')
+  // console.log(publicKey, privateKey)
+  return [elliptic.utils.toArray(publicKey, 16), elliptic.utils.toArray(privateKey, 16)]
+}
+
+// assume <pk, sk> were generated by ed25519.GenerateKey()
+export function ECVRF_prove(pk: ArrayOrBuffer, sk: ArrayOrBuffer, m: ArrayOrBuffer) {
+  const P1 = OS2ECP(pk)
+  if (!P1) return null
+
+  const x = OS2IP(expandSecret(normalize(sk)))
+  const h = ECVRF_hash_to_curve(m, pk)
+  const r = h.mul(x)
+
+  // kp, ks, err := ed25519.GenerateKey(nil)	// use GenerateKey to generate a random
+  const [kp, ks] = generatePair()
+
+  const P2 = OS2ECP(kp)
+  if (!P2) return null
+
+  const k = OS2IP(expandSecret(normalize(ks)))
+
+  // ECVRF_hash_points(g, h, g^x, h^x, g^k, h^k)
+  const c = ECVRF_hash_points(
+    g, h,
+    P1,
+    r,
+    P2,
+    h.mul(k)
+  )
+
+  // s = k - c*x mod q
+  // var z big.Int
+  // const s = z.Mod(z.Sub(F2IP(k), z.Mul(c, F2IP(x))), q)
+  const s = k.sub(c.mul(x)).mod(ec.curve.p)
+
+  // pi = gamma || I2OSP(c, N) || I2OSP(s, 2N)
+
+  return concatBuffer(ECP2OS(r), I2OSP(c, N), I2OSP(s, N2))
+}
+
+export function verify(pk: ArrayOrBuffer, m: ArrayOrBuffer, vrf: ArrayOrBuffer, proof: ArrayOrBuffer) {
+  if (vrf.length === N2 && proof.length > N2 + 1) {
+    for (let i = 0; i < vrf.length; i++) {
+      if (vrf[i] !== proof[i + 1])
+        return false
+    }
+    return ECVRF_verify(pk, proof, m)
+  }
+  return false
+}
+
+export function hashToCurve(m: ArrayOrBuffer, pk: ArrayOrBuffer) {
+  return ECVRF_hash_to_curve(m, pk)
+}
+
+export function prove(pk: ArrayOrBuffer, sk: ArrayOrBuffer, m: ArrayOrBuffer) {
+  return ECVRF_prove(pk, sk, m)
 }
