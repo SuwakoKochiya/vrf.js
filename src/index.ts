@@ -125,25 +125,12 @@ export function expandSecret(sk: Buffer) {
   return secret.slice(0, 32)
 }
 
-const testPub = '885f642c8390293eb74d08cf38d3333771e9e319cfd12a21429eeff2eddeebd2'
-const testPriv = '1fcce948db9fc312902d49745249cfd287de1a764fd48afb3cd0bdd0a8d74674885f642c8390293eb74d08cf38d3333771e9e319cfd12a21429eeff2eddeebd2'
-
-const pairKeys = eddsa.keyFromSecret(testPriv.replace(testPub, ''))
-console.log('test keys', pairKeys.getPublic('hex'), testPub)
-let tested = false
 
 export function generatePair() {
   const sec = elliptic.rand(32)
   const pair = eddsa.keyFromSecret(sec)
   const publicKey = pair.getPublic('hex') as string
   const privateKey = pair.getSecret('hex') as string + publicKey
-  if (!tested) {
-    tested = true
-    console.log('generatePair test',
-      publicKey.length === testPub.length,
-      privateKey.length === testPriv.length
-    )
-  }
   return [elliptic.utils.toArray(publicKey, 'hex'), elliptic.utils.toArray(privateKey, 'hex')]
 }
 
