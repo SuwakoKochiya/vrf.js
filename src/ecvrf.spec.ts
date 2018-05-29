@@ -1,12 +1,8 @@
-import { hashToCurve, verify, generatePair, prove, ECVRF_verify, ECVRF_prove, ECP2OS, expandSecret, normalize, OS2IP, bufferReverse } from "."
+import { toArray, normalize, OS2IP, bufferReverse } from "./utils"
+import { hashToCurve, expandSecret, ECP2OS, prove, proofToHash, verify, generatePair } from "./ecvrf"
 
 function h2a(h) {
-  const a: number[] = []
-  while (h.length >= 2) {
-    a.push(parseInt(h.substring(0, 2), 16))
-    h = h.substring(2, h.length)
-  }
-  return a
+  return toArray(h, 'hex')
 }
 const m = h2a("6d657373616765")
 const x = h2a("1fcce948db9fc312902d49745249cfd287de1a764fd48afb3cd0bdd0a8d74674885f642c8390293eb74d08cf38d3333771e9e319cfd12a21429eeff2eddeebd2")
@@ -34,9 +30,10 @@ for (let i = 0; i < 1000; i++) {
   }
 }
 
-const pi2 = ECVRF_prove(pk, x, m)
+const pi2 = prove(pk, x, m)
 console.log('proof', pi2.toString('hex'), pi2.length)
-console.log('test1', ECVRF_verify(pk, pi2, m))
+const vrf = proofToHash(pi2)
+console.log('test1', verify(pk, m, vrf, pi2))
 
 for (let i = 0; i < 1000; i++) {
   const r = [];
@@ -45,9 +42,10 @@ for (let i = 0; i < 1000; i++) {
   r.push((i >>> 8) & 0xff)
   r.push(i & 0xff)
   const [pub, priv] = generatePair()
-  const pi2 = ECVRF_prove(pub, priv, r)
+  const pi2 = prove(pub, priv, r)
   if (pi2) {
-    if (ECVRF_verify(pub, pi2, r)) {
+    const vrf = proofToHash(pi2)
+    if (verify(pub, r, vrf, pi2)) {
       console.log('success')
       break
     } else {

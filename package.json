@@ -1,9 +1,11 @@
 {
   "name": "vrf.js",
   "version": "0.0.1",
-  "description": "A javascript implementation of verifiable random function",
+  "description": "A javascript implementation of verifiable random functions",
   "scripts": {
-    "test": "ts-node ./src/index.spec.ts"
+    "build": "rm -rf lib && tsc",
+    "test": "npm run test:ecvrf",
+    "test:ecvrf": "ts-node ./src/ecvrf.spec.ts"
   },
   "main": "index.js",
   "license": "MIT",
