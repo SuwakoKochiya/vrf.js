@@ -35,7 +35,7 @@ for (let i = 0; i < 1000; i++) {
 }
 
 const pi2 = ECVRF_prove(pk, x, m)
-console.log(pi2.toString('hex'), pi2.length)
+console.log('proof', pi2.toString('hex'), pi2.length)
 console.log('test1', ECVRF_verify(pk, pi2, m))
 
 for (let i = 0; i < 1000; i++) {
@@ -54,11 +54,6 @@ for (let i = 0; i < 1000; i++) {
       console.log('fallure')
     }
   }
-  // console.log('test1', ECVRF_verify(pub, pi2, r))
-  // if (!P || P.isInfinity()) {
-  //   console.log("not on curve", P)
-  //   break
-  // }
 }
 
 
