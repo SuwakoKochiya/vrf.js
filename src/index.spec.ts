@@ -9,18 +9,16 @@ function h2a(h) {
   return a
 }
 const m = h2a("6d657373616765")
-const x1 = h2a("1fcce948db9fc312902d49745249cfd287de1a764fd48afb3cd0bdd0a8d74674885f642c8390293eb74d08cf38d3333771e9e319cfd12a21429eeff2eddeebd2")
+const x = h2a("1fcce948db9fc312902d49745249cfd287de1a764fd48afb3cd0bdd0a8d74674885f642c8390293eb74d08cf38d3333771e9e319cfd12a21429eeff2eddeebd2")
 const pk = h2a("885f642c8390293eb74d08cf38d3333771e9e319cfd12a21429eeff2eddeebd2")
-// const [pk, x] = generatePair()
-// console.log(x1, x)
 const pi = h2a("037cb8261b7196c33a542e0341bd2a8463b6d49ff186371b310bc6413237491dac73589bb7cdbb40b5d5064e0c2787ea5f0e45d1ed1c8c6634aeab58159bdc236746d83e9504a4081ad6850d0cc2c06e04")
 const v = h2a("7cb8261b7196c33a542e0341bd2a8463b6d49ff186371b310bc6413237491dac")
 
 const h = hashToCurve(m, pk)
-const x = expandSecret(normalize(x1))
-const r1 = h.mul(OS2IP(bufferReverse(x)))
+const x1 = expandSecret(normalize(x))
+const r1 = h.mul(OS2IP(bufferReverse(x1)))
 console.log('h: ', ECP2OS(h).toString('hex'))
-console.log('x1:', OS2IP(x).toString('hex'))
+console.log('x1:', OS2IP(x1).toString('hex'))
 console.log('r1:', ECP2OS(r1).toString('hex'))
 
 for (let i = 0; i < 1000; i++) {
@@ -36,12 +34,8 @@ for (let i = 0; i < 1000; i++) {
   }
 }
 
-// const [pub, priv] = generatePair()
-// // console.log(pub, priv))
-const pi2 = ECVRF_prove(pk, x1, m)
+const pi2 = ECVRF_prove(pk, x, m)
 console.log(pi2.toString('hex'), pi2.length)
-// const pibuffer = new Buffer(pi)
-// console.log(pibuffer.toString('hex'), pibuffer.length)
 console.log('test1', ECVRF_verify(pk, pi2, m))
 
 for (let i = 0; i < 1000; i++) {
