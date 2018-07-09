@@ -1,38 +1,37 @@
-import * as crypto from "crypto"
-import * as elliptic from 'elliptic'
-import { BN, BNObject } from "bn.js";
+import { Buffer } from 'buffer';
+import * as crypto from 'crypto';
+import * as elliptic from 'elliptic';
+import { EDDSA } from './constant';
 
-export function concatBuffer(...args: ArrayOrBuffer[]) {
-  const arr = args.reduce<number[]>((prev, curr) => prev.concat(toArray(curr, 16)), [])
-  return new Buffer(arr)
-}
-
-export function bufferReverse(buffer: Buffer) {
-  return new Buffer(buffer).reverse()
+export function reverseB(buffer: Buffer) {
+  return B(buffer).reverse() as Buffer;
 }
 
 export type Point = elliptic.curve.edwards.Point
-export type ArrayOrBuffer = Buffer | number[] | Uint8Array
 
-export const sha256 = () => crypto.createHash('sha256')
-export const sha512 = () => crypto.createHash('sha512')
+export const sha256 = () => crypto.createHash('sha256');
+export const sha512 = () => crypto.createHash('sha512');
 
-export function normalize(data: any) {
-  return new Buffer(data)
+export function B(data: any) {
+  if (typeof data === 'string') {
+    return Buffer.from(data, 'hex');
+  }
+  return Buffer.from(data);
 }
 
-export function S2OS(os: number[]) {
-  const sign = os[31] >>> 7
-  os.unshift(sign + 2)
-  return normalize(os)
+export function expandSecret(sk: Buffer) {
+  const secret = sha512().update(sk.slice(0, 32)).digest();
+  secret[0] &= 248;
+  secret[31] &= 127;
+  secret[31] |= 64;
+  return secret.slice(0, 32);
 }
 
-export function OS2IP(os: ArrayOrBuffer) {
-  return new BN(os as any)
+export function generatePair(): [Buffer, Buffer, Buffer] {
+  const sec = elliptic.rand(32);
+  const pair = EDDSA.keyFromSecret(sec);
+  const publicKey = B(pair.getPublic());
+  const secretKey = B(pair.getSecret());
+  const privateKey = Buffer.concat([secretKey, publicKey]);
+  return [publicKey, privateKey, secretKey];
 }
-
-export function I2OSP(i: BNObject, len?: number) {
-  return i.toArray('be', len)
-}
-
-export const toArray = elliptic.utils.toArray

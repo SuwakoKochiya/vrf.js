@@ -1,4 +1,4 @@
-import * as utils from './utils'
-import * as ecvrf from './ecvrf'
+import * as ecvrf from './ecvrf';
+import * as utils from './utils';
 
-export { utils, ecvrf }
+export { utils, ecvrf };

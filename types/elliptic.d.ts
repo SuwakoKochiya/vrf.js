@@ -1,18 +1,22 @@
-
 declare module 'elliptic' {
-  import { BNObject as BN, Red } from 'bn.js'
+  import { BNObject as BN, Red } from 'bn.js';
   export var eddsa: EDDSAStatic;
   export var ec: ECStatic;
   export var hmacDRBG: HmacDRBGStatic;
   /*
    * Supported curves: p192, p224, p256, p384, p521, curve25519, ed25519, secp256k1
    */
-  export var curves: { [key: string]: PresetCurve; }
+  export var curves: { [key: string]: PresetCurve; };
   export const version: string;
+
   export function rand(len: number): Uint8Array;
 
   type Curve = curve.EdwardsCurve | curve.MontCurve | curve.ShortCurve;
-  type Point = curve.edwards.Point | curve.mont.Point | curve.short.Point | curve.short.JPoint;
+  type Point =
+    curve.edwards.Point
+    | curve.mont.Point
+    | curve.short.Point
+    | curve.short.JPoint;
 
   // ---------------------------- hash.js module types
   /*
@@ -57,13 +61,33 @@ declare module 'elliptic' {
     hash: Hash;
 
     genKeyPair(options?: KeyPairGeneratorOptions): KeyPair1;
-    getKeyRecoveryParam(e: BNConstructedType, signature: SignatureOptions, Q: BN, enc: EncType): number;
+    getKeyRecoveryParam(
+      e: BNConstructedType,
+      signature: SignatureOptions,
+      Q: BN,
+      enc: EncType,
+    ): number;
     keyFromPrivate(priv: KeyPair1 | BNConstructedType, enc: EncType): KeyPair1;
     keyFromPublic(pub: KeyPair1 | BNConstructedType, enc: EncType): KeyPair1;
     keyPair(options: KeyPairOptions): KeyPair1;
-    recoverPubKey(msg: BNConstructedType, signature: SignatureOptions, j: number, enc: EncType): BN;
-    sign(msg: BNConstructedType, key: KeyPair1 | BN, enc: EncType, options?: any): Signature1;
-    verify(msg: BNConstructedType, signature: SignatureOptions, key: KeyPair1 | BN, enc: EncType): boolean;
+    recoverPubKey(
+      msg: BNConstructedType,
+      signature: SignatureOptions,
+      j: number,
+      enc: EncType,
+    ): BN;
+    sign(
+      msg: BNConstructedType,
+      key: KeyPair1 | BN,
+      enc: EncType,
+      options?: any,
+    ): Signature1;
+    verify(
+      msg: BNConstructedType,
+      signature: SignatureOptions,
+      key: KeyPair1 | BN,
+      enc: EncType,
+    ): boolean;
   }
 
   interface KeyPairGeneratorOptions {
@@ -103,16 +127,35 @@ declare module 'elliptic' {
     pub: BN;
 
     constructor(ec: EC, options: KeyPairOptions);
-    fromPublic(ec: EC, pub: BNConstructedType | KeyPair1, enc: EncType): KeyPair1;
-    fromPrivate(ec: EC, priv: BNConstructedType | KeyPair1, enc: EncType): KeyPair1;
+
+    fromPublic(
+      ec: EC,
+      pub: BNConstructedType | KeyPair1,
+      enc: EncType,
+    ): KeyPair1;
+
+    fromPrivate(
+      ec: EC,
+      priv: BNConstructedType | KeyPair1,
+      enc: EncType,
+    ): KeyPair1;
+
     validate(): ValidationResult;
+
     getPublic(compact?: string, enc?: EncType): BN;
+
     getPrivate(enc?: string): BN | string;
+
     _importPrivate(key: BNConstructedType, enc?: EncType): void;
+
     _importPublic(key: BNConstructedType, enc?: EncType): void;
+
     derive(pub: BN): BN;
+
     sign(msg: BNConstructedType, enc?: EncType, options?: any): Signature1;
+
     verify(msg: BNConstructedType, signature: SignatureOptions): boolean;
+
     inspect(): string;
   }
 
@@ -126,6 +169,7 @@ declare module 'elliptic' {
     place?: number;
 
     constructor(options: SignatureOptions, enc: EncType);
+
     toDER(enc?: EncType): ArrayOrString;
   }
 
@@ -151,7 +195,11 @@ declare module 'elliptic' {
     keyFromSecret(secret: any): KeyPair2;
     makeSignature(sig: any): Signature2;
     sign(message: ArrayOrString, secret: ArrayOrString | KeyPair2): Signature2;
-    verify(message: number[], sig: ArrayOrString | Signature2, pub: ArrayOrString | Point | KeyPair2): boolean;
+    verify(
+      message: number[],
+      sig: ArrayOrString | Signature2,
+      pub: ArrayOrString | Point | KeyPair2,
+    ): boolean;
   }
 
   interface KeyPairParams {
@@ -176,13 +224,20 @@ declare module 'elliptic' {
     _messagePrefix: number[];
 
     constructor(eddsa: EDDSA, params: KeyPairParams);
+
     fromPublic(eddsa: EDDSA, pub: KeyPair2): KeyPair2;
+
     fromSecret(eddsa: EDDSA, pub: KeyPair2): KeyPair2;
+
     secret(): number[];
+
     sign(message: ArrayOrString): Signature2;
+
     verify(message: number[], sig: ArrayOrString | Signature2): boolean;
-    getSecret(enc: EncType): ArrayOrString;
-    getPublic(enc: EncType): ArrayOrString;
+
+    getSecret(enc?: EncType): ArrayOrString;
+
+    getPublic(enc?: EncType): ArrayOrString;
   }
 
   class Signature2 {
@@ -192,7 +247,9 @@ declare module 'elliptic' {
     _Sencoded: number[];
 
     constructor(eddsa: EDDSA, sig: ArrayOrString | SignatureObject)
+
     toBytes(): number[];
+
     toHex(): string;
   }
 
@@ -211,7 +268,12 @@ declare module 'elliptic' {
 
   interface HmacDRBGStatic {
     new(options: HmacDRBGOptions): HmacDRBG;
-    reseed(entropy: ArrayOrString, entropyEnc: EncType, add: ArrayOrString, addEnc: EncType): void;
+    reseed(
+      entropy: ArrayOrString,
+      entropyEnc: EncType,
+      add: ArrayOrString,
+      addEnc: EncType,
+    ): void;
   }
 
   interface HmacDRBG {
@@ -252,6 +314,7 @@ declare module 'elliptic' {
       c?: BNConstructedType;
       d?: BNConstructedType;
     }
+
     interface Precomputed {
       doubles: PrecomputedObj;
       naf: PrecomputedObj;
@@ -260,16 +323,19 @@ declare module 'elliptic' {
        */
       beta: any;
     }
+
     interface PrecomputedObj {
       step?: number;
       wnd?: number;
       points: Point[];
     }
+
     interface Endomorphism {
       beta?: BNConstructedType;
       lambda?: BNConstructedType;
       basis?: Vector[];
     }
+
     class BaseCurve {
       type: string;
       p: BN;
@@ -285,11 +351,22 @@ declare module 'elliptic' {
       redN: Red;
 
       constructor(type: string, conf: CurveConf);
+
       decodePoint(bytes: ArrayOrString, enc: EncType): Point;
-      point(x?: BNConstructedType, y?: BNConstructedType, z?: BNConstructedType, t?: BNConstructedType, isRed?: boolean): Point;
+
+      point(
+        x?: BNConstructedType,
+        y?: BNConstructedType,
+        z?: BNConstructedType,
+        t?: BNConstructedType,
+        isRed?: boolean,
+      ): Point;
+
       validate(point?: Point): boolean;
+
       pointFromJSON(obj: Object, isRed?: boolean): Point;
     }
+
     export class MontCurve extends BaseCurve {
       a: Red;
       b: Red;
@@ -297,11 +374,22 @@ declare module 'elliptic' {
       a24: BN;
 
       constructor(conf: CurveConf);
+
       decodePoint(bytes: ArrayOrString, enc: EncType): Point;
-      point(x?: BNConstructedType, y?: BNConstructedType, z?: BNConstructedType, t?: BNConstructedType, isRed?: boolean): Point;
+
+      point(
+        x?: BNConstructedType,
+        y?: BNConstructedType,
+        z?: BNConstructedType,
+        t?: BNConstructedType,
+        isRed?: boolean,
+      ): Point;
+
       validate(point?: Point): boolean;
+
       pointFromJSON(obj: Object, isRed?: boolean): Point;
     }
+
     export class EdwardsCurve extends BaseCurve {
       twisted: boolean;
       mOneA: boolean;
@@ -314,14 +402,33 @@ declare module 'elliptic' {
       dd: BN;
 
       constructor(conf: CurveConf);
-      jpoint(x: BNConstructedType, y: BNConstructedType, z: BNConstructedType, t: BNConstructedType): Point;
+
+      jpoint(
+        x: BNConstructedType,
+        y: BNConstructedType,
+        z: BNConstructedType,
+        t: BNConstructedType,
+      ): Point;
+
       pointFromX(x: BNConstructedType, odd: boolean): Point;
+
       pointFromY(y: BNConstructedType, odd: boolean): Point;
+
       decodePoint(bytes: ArrayOrString, enc: EncType): Point;
-      point(x?: BNConstructedType, y?: BNConstructedType, z?: BNConstructedType, t?: BNConstructedType, isRed?: boolean): Point;
+
+      point(
+        x?: BNConstructedType,
+        y?: BNConstructedType,
+        z?: BNConstructedType,
+        t?: BNConstructedType,
+        isRed?: boolean,
+      ): Point;
+
       validate(point?: Point): boolean;
+
       pointFromJSON(obj: Object, isRed?: boolean): Point;
     }
+
     export class ShortCurve extends BaseCurve {
       a: BN;
       b: BN;
@@ -331,13 +438,30 @@ declare module 'elliptic' {
       endo: Endomorphism;
 
       constructor(conf: any);
+
       decodePoint(bytes: ArrayOrString, enc: EncType): Point;
-      point(x?: BNConstructedType, y?: BNConstructedType, z?: BNConstructedType, t?: BNConstructedType, isRed?: boolean): Point;
-      jpoint(x: BNConstructedType, y: BNConstructedType, z: BNConstructedType): short.JPoint;
+
+      point(
+        x?: BNConstructedType,
+        y?: BNConstructedType,
+        z?: BNConstructedType,
+        t?: BNConstructedType,
+        isRed?: boolean,
+      ): Point;
+
+      jpoint(
+        x: BNConstructedType,
+        y: BNConstructedType,
+        z: BNConstructedType,
+      ): short.JPoint;
+
       validate(point?: Point): boolean;
+
       pointFromJSON(obj: Object, red?: boolean): Point;
+
       pointFromX(x: BNConstructedType, odd: boolean): Point;
     }
+
     class BasePoint {
       curve: Curve;
       type: string;
@@ -349,32 +473,51 @@ declare module 'elliptic' {
       constructor(curve: Curve, type: string);
 
       dblp(k: number): Point;
+
       encode(enc: EncType, compact: boolean): ArrayOrString;
+
       encodeCompressed(enc: EncType): ArrayOrString;
 
       dbl(): Point;
+
       eq(other: Point): boolean;
+
       precompute(power: number): Point;
+
       validate(): boolean;
     }
+
     namespace mont {
       export class Point extends BasePoint {
         x: BN;
         z: BN;
 
         constructor(curve: Curve, x: BNConstructedType, z: BNConstructedType);
+
         fromJSON(curve: Curve, obj: Object): Point;
+
         dbl(): Point;
+
         eq(other: Point): boolean;
+
         precompute(power: number): Point;
+
         validate(): boolean;
+
         inspect(): string;
+
         isInfinity(): boolean;
+
         add(p: Point): Point;
+
         diffAdd(p: Point, diff: Point): Point;
+
         mulAdd(): Point;
+
         jumlAdd(): Point;
+
         normalize(): Point;
+
         getX(): BN;
       }
     }
@@ -386,24 +529,48 @@ declare module 'elliptic' {
         t: BN;
         zOne: boolean;
 
-        constructor(curve: Curve, x: BNConstructedType, y: BNConstructedType, z: BNConstructedType, t: BNConstructedType);
+        constructor(
+          curve: Curve,
+          x: BNConstructedType,
+          y: BNConstructedType,
+          z: BNConstructedType,
+          t: BNConstructedType,
+        );
+
         fromJSON(curve: Curve, obj: Object): Point;
+
         inspect(): string;
+
         isInfinity(): boolean;
+
         dbl(): Point;
+
         add(p: Point): Point;
+
         mul(k: BN): Point;
+
         mulAdd(k1: BN, p: Point, k2: BN): Point;
+
         jmulAdd(k1: BN, p: Point, k2: BN): Point;
+
         normalize(): Point;
+
         neg(): Point;
+
         getX(): BN;
+
         getY(): BN;
+
         eq(other: Point): boolean;
+
         eqXToP(x: BN): boolean;
+
         precompute(power: number): Point;
+
         validate(): boolean;
+
         toP(): Point;
+
         mixedAdd(p: Point): Point;
       }
     }
@@ -413,41 +580,79 @@ declare module 'elliptic' {
         y: BN;
         inf: boolean;
 
-        constructor(curve: Curve, x: BNConstructedType, y: BNConstructedType, isRed: boolean);
+        constructor(
+          curve: Curve,
+          x: BNConstructedType,
+          y: BNConstructedType,
+          isRed: boolean,
+        );
+
         dbl(): Point;
+
         eq(other: Point): boolean;
+
         toJSON(): Object[];
+
         fromJSON(curve: Curve, obj: Object, red: boolean): Point;
+
         validate(): boolean;
+
         toJ(): JPoint;
+
         inspect(): string;
+
         isInfinity(): boolean;
+
         add(p: Point): Point;
+
         mul(k: BNConstructedType): Point;
+
         mulAdd(k1: BN, p2: Point, k2: BN): Point;
+
         jmulAdd(k1: BN, p2: Point, k2: BN): Point;
+
         neg(_precompute?: boolean): Point;
+
         getX(): BN;
+
         getY(): BN;
       }
+
       export class JPoint extends BasePoint {
         x: BN;
         y: BN;
         z: BN;
         zOne: boolean;
 
-        constructor(curve: Curve, x: BNConstructedType, y: BNConstructedType, z: BNConstructedType);
+        constructor(
+          curve: Curve,
+          x: BNConstructedType,
+          y: BNConstructedType,
+          z: BNConstructedType,
+        );
+
         eq(other: JPoint): boolean;
+
         toP(): JPoint;
+
         neg(): JPoint;
+
         add(p: JPoint): JPoint;
+
         mixedAdd(p: JPoint): JPoint;
+
         dblp(pow: number): JPoint;
+
         dbl(): JPoint;
+
         trpl(): JPoint;
+
         mul(k: BN, kbase: EncType): JPoint;
+
         eqXToP(x: BN): boolean;
+
         inspect(): string;
+
         isInfinity(): boolean;
       }
     }
@@ -461,6 +666,7 @@ declare module 'elliptic' {
     n: BN;
 
     constructor(options: PresetCurveOptions)
+
     validate(point: Point): boolean;
   }
 
@@ -488,13 +694,21 @@ declare module 'elliptic' {
   // ---------------------------- utils module
   export namespace utils {
     function assert(val: boolean, msg: string): void;
+
     function encode(arr: ArrayOrString, enc: EncType): ArrayOrString;
+
     function getJSF(k1: BN, k2: BN): number[][];
+
     function getNAF(num: BN, w: number): number[];
+
     function intFromLE(bytes: BNConstructedType): BN;
+
     function parseBytes(bytes: ArrayOrString): number[];
+
     function toArray(msg: ArrayOrString | Object, enc: EncType): number[];
+
     function toHex(msg: ArrayOrString): string;
+
     function zero2(word: string): string;
   }
 }
