@@ -29,24 +29,24 @@ function decodeProof(proof: Buffer) {
   return { r, c: OS2IP(c), s: OS2IP(s) };
 }
 
-function checkHash(proof: Buffer, hash: Buffer) {
-  if (hash.length === N2 && proof.length > N2 + 1) {
-    if (hash.equals(proofToHash(proof))) {
+function checkHash(proof: Buffer, value: Buffer) {
+  if (value.length === N2 && proof.length > N2 + 1) {
+    if (value.equals(proofToHash(proof))) {
       return true;
     }
   }
   return false;
 }
 
-// apis
+// APIs
 
-export function hashToCurve(m: Buffer, pk: Buffer): any {
+export function hashToCurve(message: Buffer, publicKey: Buffer): any {
   for (let i = 0; i < LIMIT; i++) {
 
     const ctr = I2OSP(new BN(i), 4);
     const digest = sha256()
-      .update(m)
-      .update(pk)
+      .update(message)
+      .update(publicKey)
       .update(ctr)
       .digest();
 
@@ -61,15 +61,15 @@ export function hashToCurve(m: Buffer, pk: Buffer): any {
   return null;
 }
 
-export function prove(pk: Buffer, sk: Buffer, m: Buffer) {
-  const P1 = OS2ECP(pk);
+export function prove(publicKey: Buffer, privateKey: Buffer, message: Buffer) {
+  const P1 = OS2ECP(publicKey);
   if (!P1) {
     return null;
   }
 
-  const x1 = expandSecret(sk);
+  const x1 = expandSecret(privateKey);
   const x = OS2IP(reverseB(x1));
-  const h = hashToCurve(m, pk);
+  const h = hashToCurve(message, publicKey);
   const r = h.mul(x);
 
   const [kp, ks] = generatePair();
@@ -85,29 +85,35 @@ export function prove(pk: Buffer, sk: Buffer, m: Buffer) {
   return Buffer.concat([ECP2OS(r), I2OSP(c, N), I2OSP(s, N2)]);
 }
 
-export function proofToHash(pi: Buffer) {
-  return pi.slice(1, N2 + 1);
+export function proofToHash(proof: Buffer) {
+  return proof.slice(1, N2 + 1);
+}
+
+export function vrf(publicKey: Buffer, privateKey: Buffer, message: Buffer) {
+  const proof = prove(publicKey, privateKey, message);
+  const value = proofToHash(proof);
+  return { proof, value };
 }
 
 export function verify(
-  pk: Buffer,
-  m: Buffer,
+  publicKey: Buffer,
+  message: Buffer,
   proof: Buffer,
-  vrf?: Buffer,
+  value?: Buffer,
 ) {
-  if (vrf && !checkHash(proof, vrf)) {
+  if (value && !checkHash(proof, value)) {
     return false;
   }
   const o = decodeProof(proof);
   if (!o) {
     return false;
   }
-  const P1 = OS2ECP(pk);
+  const P1 = OS2ECP(publicKey);
   if (!P1) {
     return false;
   }
   const u = P1.mul(o.c).add(G.mul(o.s));
-  const h = hashToCurve(m, pk);
+  const h = hashToCurve(message, publicKey);
   const v = o.r.mul(o.c).add(h.mul(o.s));
   const c = hashPoints(G, h, P1, o.r, u, v);
   return c.eq(o.c);

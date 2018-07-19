@@ -5,9 +5,10 @@
   "scripts": {
     "build": "rm -rf lib && tsc",
     "test": "npm run test:ecvrf",
-    "test:ecvrf": "ts-node ./src/ecvrf.spec.ts"
+    "test:ecvrf": "ts-node ./src/ecvrf.spec.ts",
+    "test:sortition": "ts-node ./src/sortition.spec.ts"
   },
-  "main": "index.js",
+  "main": "./lib/ecvrf.js",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^10.1.2",
@@ -15,6 +16,8 @@
     "typescript": "^2.8.3"
   },
   "dependencies": {
+    "@types/big.js": "^4.0.5",
+    "big.js": "^5.1.2",
     "bn.js": "^4.11.8",
     "buffer": "^5.1.0",
     "elliptic": "^6.4.0"
