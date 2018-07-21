@@ -8,7 +8,7 @@
     "test:ecvrf": "ts-node ./src/ecvrf.spec.ts",
     "test:sortition": "ts-node ./src/sortition.spec.ts"
   },
-  "main": "./lib/ecvrf.js",
+  "main": "./lib/index.js",
   "license": "MIT",
   "devDependencies": {
     "@types/node": "^10.1.2",
