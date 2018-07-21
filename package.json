@@ -1,6 +1,6 @@
 {
   "name": "vrf.js",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A javascript implementation of verifiable random functions",
   "scripts": {
     "build": "rm -rf lib && tsc",
