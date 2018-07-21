@@ -1,4 +1,3 @@
-# vrf.js
 
 <img src="https://user-images.githubusercontent.com/5719833/43038572-43f2fa40-8d4e-11e8-966f-76532d296d8c.png" width=120 />
 
