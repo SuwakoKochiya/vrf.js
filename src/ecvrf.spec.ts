@@ -56,7 +56,7 @@ for (let i = 0; i < 1000; i++) {
       break;
     }
     else {
-      console.log('fallure');
+      console.log('error');
     }
   }
 }
