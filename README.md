@@ -1,9 +1,15 @@
 
-<img src="https://user-images.githubusercontent.com/5719833/43038572-43f2fa40-8d4e-11e8-966f-76532d296d8c.png" width=120 />
+<h1 align="center">
+<img src="https://user-images.githubusercontent.com/5719833/43038622-34b064ea-8d4f-11e8-92ae-c5e060e5f1fc.png" width=220 />
+</h1>
 
+<p align="center">
 A Javascript Implementation for Verifiable Random Functions
+</p>
 
+<p align="center">
 [![npm version](https://badge.fury.io/js/vrf.js.svg)](https://badge.fury.io/js/vrf.js)
+</p>
 
 ## Install
 
