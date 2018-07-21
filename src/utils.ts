@@ -1,3 +1,4 @@
+import { Big } from 'big.js';
 import { Buffer } from 'buffer';
 import * as crypto from 'crypto';
 import * as elliptic from 'elliptic';
@@ -17,6 +18,16 @@ export function B(data: any) {
     return Buffer.from(data, 'hex');
   }
   return Buffer.from(data);
+}
+
+export function N(n: Big | number | string): Big {
+  switch (typeof n) {
+    case 'number':
+    case 'string':
+      return new Big(n)
+    default:
+      return n as any
+  }
 }
 
 export function expandSecret(sk: Buffer) {
