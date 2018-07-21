@@ -48,12 +48,12 @@ const tau = utils.N(10)
 
 const [publicKey, privateKey] = utils.generatePair()
 const [value, proof, j] = sortition.sortition(
-	privateKey, publicKey,
-	seed, tau, role, w, W
+  privateKey, publicKey,
+  seed, tau, role, w, W
 )
 
 if (+j > 0) {
-	// next
+  // next
 }
 ```
 
