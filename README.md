@@ -8,7 +8,9 @@ A Javascript Implementation for Verifiable Random Functions
 </p>
 
 <p align="center">
-[![npm version](https://badge.fury.io/js/vrf.js.svg)](https://badge.fury.io/js/vrf.js)
+  <a href="https://badge.fury.io/js/vrf.j">
+    <img src="https://badge.fury.io/js/vrf.js.svg" />
+  </a>
 </p>
 
 ## Install
