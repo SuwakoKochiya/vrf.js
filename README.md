@@ -29,7 +29,7 @@ ecvrf.verify(publicKey, X, proof, value)
 
 ### VRF Sortition
 
-``` javascrpt
+``` javascript
 const {utils, ecvrf, sortition} = require('vrf.js')
 const seed = Buffer.from('sortition')
 const role = Buffer.from('test')
